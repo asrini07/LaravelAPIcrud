@@ -29,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
         Passport::tokensCan([
             'admin' => 'admin access',
             'user' => 'user access',
+            'mahasiswa' => 'mahasiswa access',
         ]);
         
 

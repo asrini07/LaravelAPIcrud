@@ -35,8 +35,12 @@ class User extends Authenticatable
     /*
     * Method untuk yang mendefinisikan relasi antara model user dan model Role
     */  
+    //public function roles(){
+      //  return $this->belongsToMany(Role::class);
+    //}
+
     public function roles(){
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(Role::class, 'user_roles');
     }
 
     public function putRole($role){
@@ -55,7 +59,8 @@ class User extends Authenticatable
 
     public function hasRole($roleName){
         foreach($this->roles as $role){
-            if($role->role_name == $roleName) return true;
+            if(in_array($role->role_name, $roleName))
+            return true;
         }
         return false;
     }

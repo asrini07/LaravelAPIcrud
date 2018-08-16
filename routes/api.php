@@ -32,21 +32,15 @@ Route::group(['middleware' => 'auth:api'], function(){
 // klo ga salah itu scope = sifatnya OR
 // scopes == AND
 Route::get('apimahasiswa/view', 'API\MahasiswaController@index')
-    ->middleware(['auth:api', 'scope:user,admin']);
+    ->middleware(['auth:api', 'scope:user,admin,mahasiswa']);
 Route::get('apimahasiswa/view/{id}', 'API\MahasiswaController@show')
-    ->middleware(['auth:api', 'scope:user,admin']);
+    ->middleware(['auth:api', 'role:user,admin']);
 Route::post('apimahasiswa','API\MahasiswaController@store')
-   ->middleware(['auth:api', 'scopes:admin']);
+   ->middleware(['auth:api', 'role:admin']);
 Route::post('apimahasiswa/{id}','API\MahasiswaController@update')
-    ->middleware(['auth:api', 'scopes:admin']);
+    ->middleware(['auth:api', 'role:admin']);
 Route::delete('apimahasiswa/{id}','API\MahasiswaController@destroy')
     ->middleware(['auth:api', 'scopes:admin']);
-
-
-Route::post('/api/orders', 'OrderController@store')
-    ->middleware(['auth:api', 'scopes:manage-order']);
-
-
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();

@@ -23,7 +23,6 @@ class MahasiswaController extends Controller
 //insomia bwt login mana mba?
 public function index()
     {
-   // dd('OK');
         $user=Auth::user();
         $data=Mmahasiswa::all();
         $mahasiswa = $user->mmahasiswas;
@@ -36,7 +35,6 @@ public function index()
     }
     public function show($id){
         $data=Mmahasiswa::where('nim',$id)->get();
-        //dd($data);
         if(!$data){
             return response()->json([
                 'success' => false,

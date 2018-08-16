@@ -23,18 +23,23 @@ class UserController extends Controller
           //  return response()->json(['error'=>'Unauthorised'],401);
         //}
     //}
+    
     public function login(Request $request, $user){
         // implement your user role retrieval logic, for example retrieve from `roles` database table
         $role = $user->checkRole();
-
+        dd($role);
         // grant scopes based on the role that we get previously
         if ($role == 'admin') {
             $request->request->add([
                 'scope' => 'admin' // grant manage order scope for user with admin role
             ]);
-        } else {
+        }elseif($role=='user'){
             $request->request->add([
                 'scope' => 'user' // read-only order scope for other user role
+            ]);
+        }else {
+            $request->request->add([
+                'scope' => 'mahasiswa' // read-only order scope for other user role
             ]);
         }
 
