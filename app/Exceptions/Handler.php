@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Auth\AuthenticationException;
+use Laravel\Passport\Exceptions\MissingScopeException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
@@ -46,6 +48,25 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        if($exception instanceof MissingScopeException){
+            return $request->expectsJson()
+                ? response()->json([
+                    'status' => 1,
+                    'errorcode' => 401,
+                    'message' => 'Anda tidak mendapat hak akses kesini..'
+                ], 401)
+                : redirect()->guest(route('login'));
+        }
         return parent::render($request, $exception);
+    }
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+        return $request->expectsJson()
+            ? response()->json([
+                'status' => 1,
+                'errorcode' => 401,
+                'message' => 'Unauthenticated, token not valid'
+            ], 401)
+            : redirect()->guest(route('login'));
     }
 }

@@ -16,7 +16,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password','activation_token','active'
     ];
 
     /**
@@ -30,6 +30,23 @@ class User extends Authenticatable
 
     public function mahasiswas(){
         return $this->hasMany(Mmahasiswa::class);
+    }
+
+    public function posts(){
+        return $this->hasMany(Artikel::class);
+    }
+
+    public function activateAccount($code)
+    {
+        $user = User::where('activation_token', $code)->first(); 
+        if($user){
+            $user->update(['active' => 1, 'activation_token' => NULL]);
+            return true;
+        } else{
+            return response()->json([
+                'message' => 'This activation token is invalid.'
+            ], 404);
+        }
     }
 
     /*

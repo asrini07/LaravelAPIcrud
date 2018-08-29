@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Validator;
 
+
 class MahasiswaController extends Controller
 {
     //
@@ -29,20 +30,22 @@ public function index()
         return response()->json([
             'success' => true,
             'status' =>200,
-            'user'  => Auth::user(),
             'data' => $data
         ]);
     }
     public function show($id){
         $data=Mmahasiswa::where('nim',$id)->get();
+       // dd($data);
         if(!$data){
             return response()->json([
                 'success' => false,
+                'status' => 400,
                 'message' => 'mahasiswa with nim ' . $id . ' not found'
             ], 400);
         }else{
             return response()->json([
                 'success' => true,
+                'status' => 200,
                 'message' => $data
             ], 200);
         }
@@ -58,7 +61,11 @@ public function index()
         ]);
 
         if($validator->fails()){
-            return response()->json(['error'=>$validator->errors()], 401);
+            return response()->json([
+                'success' => false,
+                'status' => 401,
+                'error'=>$validator->errors()
+            ], 401);
         }
 
         $data= new Mmahasiswa();
@@ -71,21 +78,25 @@ public function index()
 
         if($data->save()){
             $res["message"]="Sukses";
+            $res["status"]=200;
             $res["value"]=$data;
             return response($res);
 
         } else{
             $res["message"]="Gagal";
+            $res["status"]=400;
             return response($res);
         }
 
     }
 
     public function update(Request $request, $id){
-        $data=Mmahasiswa::where('nim',$id)->first(); 
+        $data=Mmahasiswa::where('nim',$id)->first();
+         
         if (!$data) {
             return response()->json([
                 'success' => false,
+                'status' => 400,
                 'message' => 'Mahasiswa with nim ' . $id . ' not found'
             ], 400);
         } 
@@ -97,9 +108,11 @@ public function index()
         $data->nohp=$request->input('nohp');
         if($data->save()){
             $res["message"]="Sukses";
+            $res["status"]=200;
             $res["value"]=$data;
             return response($res);
         } else{
+            $res["status"]=400;
             $res["message"]="Gagal";
             return response($res);
         }
@@ -110,6 +123,7 @@ public function index()
         if (!$data) {
             return response()->json([
                 'success' => false,
+                'status' => 400,
                 'message' => 'Mahasiswa with nim ' . $id . ' not found'
             ], 400);
         }
@@ -117,10 +131,12 @@ public function index()
 
         if($data->delete()){
             $res["message"]="sukses";
+            $res["status"]=200;
             $res["value"]=$data;
             return response($res);
         } else{
             $res["message"]="gagal";
+            $res["status"]=400;
             return response($res);
         }
 

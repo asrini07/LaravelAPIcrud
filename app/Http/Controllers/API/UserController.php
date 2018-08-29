@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Validator;
+use App\Jobs\ProcessSendEmail;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Route;
 
 class UserController extends Controller
 {
@@ -24,7 +27,7 @@ class UserController extends Controller
         //}
     //}
     
-    public function login(Request $request, $user){
+    /*public function login(Request $request, $user){
         // implement your user role retrieval logic, for example retrieve from `roles` database table
         $role = $user->checkRole();
         dd($role);
@@ -49,7 +52,27 @@ class UserController extends Controller
             'post'
         );
         return Route::dispatch($tokenRequest);
+    }*/
+    public function validasi(Request $request){
+        $data=User::where(['email'=>$request->input('username'),'active'=>'1'])->first();
+       // dd($data);
+        if(!$data){
+            return response()->json([
+                'success' => false,
+                'errorcode' => 400,
+                'message' => 'Akun Email belum tervalidasi'
+            ], 400);
+        } else{
+            // forward the request to the oauth token request endpoint
+            $tokenRequest = Request::create(
+                '/oauth/token',
+                'post'
+            );
+            return Route::dispatch($tokenRequest);
+        }
+        
     }
+
     public function register(Request $request){
         $validator= Validator::make($request->all(),[
             'name' => 'required',
@@ -63,19 +86,64 @@ class UserController extends Controller
         }
 
         $input=$request->all();
+        
         $input['password']=bcrypt($input['password']);
-        $user = User::create($input);
-        $success['token'] = $user->createToken('nApp')->accessToken;
-        $success['name'] = $user->name;
+        $input['active']=false;
+        $input['activation_token'] = str_random(60);
 
+        $data=User::where('email',$input['email'])->first();
+        if($data){
+            return response()->json([
+                'success' => false,
+                'errorcode' => 400,
+                'message' => 'Email user telah terdaftar'
+            ], 400);
+        }
+
+        event(new Registered($user = User::create($input)));
+
+        //$success['token'] = $user->createToken('nApp')->accessToken;
+        $success['success'] = true;
+        $success['status'] = 200;
+        $success['email'] = $user;
+       /* $success['kode_aktivasi'] = $user->activation_token;
+        $success['kode_aktivasi'] = $user->activation_token;
+        $success['name'] = $user->name;*/
+
+        dispatch(new ProcessSendEmail($user));
+        view('email.verifikasi');
         return response()->json(['success'=>$success], $this->successStatus);
 
     }
+
+    public function sendEmail($data, $input)
+    {
+        /*Mail::send('email.verifikasi', $data, function($message) use ($input) {
+            $message->to($input['email'],$input['name'])
+                    ->subject('Please verify your account registration!');
+                    //->queue(new SendEmail());
+        
+        });*/
+       //Mail::to('iyoandaeni@gmail.com ')->queue(new SendEmail($data));
+       ProcessSendEmail::dispatch($podcast);
+    }
+
+    public function activate($code, User $user)
+    {
+        if ($user->activateAccount($code)) {
+            //dd($user->activateAccount($code));
+            return 'Akun anda berhasil di aktivasi';
+        }
+ 
+        return 'Fail';
+    }
+    
     public function logout(Request $request)
     {
         $request->user()->token()->revoke();
         return response()->json([
             'message' => 'Successfully logged out',
+            'status' => 200,
             'success'=>$user
         ] ,$this->successStatus);
     }
